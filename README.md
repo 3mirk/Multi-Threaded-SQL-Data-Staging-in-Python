@@ -1,21 +1,19 @@
 # Multi-Threaded-SQL-Data-Staging in Python
 
-Typically, SQL connections are handled via built-in data connectors (or ODBC's) in Data Visualization tools like Tableau or PowerBI. 
+Typically, SQL connections are handled via built-in data connectors in Data Visualization tools like Tableau or PowerBI. 
 However, connecting simultaneously to a larger-and-larger number of such connections has several downsides. 
-These drawbacks can include less-than-ideal parallel loading, delays due to datatype inferences, and data-handling bottlenecks (storing data in memory first, then transfering to data model).
+These drawbacks can include unoptimized parallel loading, delays due to datatype inferences, and data-handling bottlenecks.
 
-Additionally, setting up a significantly large number of data sources in Data Viz tools like Tableau or PowerBI can be quite cumbersome or error-prone. 
-One will usually have to either manually load each data source via whatever "Data Source Wizards" are availabe in the software, or add the sources via M-Code or Parametrization which has its own significant limitations.
+Additionally, setting up a significantly large number of data sources in Data Viz tools can be quite cumbersome or error-prone. 
+Using the standard "Data Source Wizards" or M-Code Parametrization both have their own significant limitations.
 
 This Python script serves as a data staging tool that addresses both category of issues by exporting results into a single CSV file. 
 The script is also modular, allowing for easy modification and scalability; i.e. results can easily be exported to a SQL Database as opoosed to a CSV File.
 
-Foremost, this script accomodates the querying of any number of SQL databases specified by the user. 
-This is handled by a user-defined configuration list which allows for the rapid addition or removal of SQL connections as needed. 
-Additionally, the script dynamically handles varying SQL Database types via pre-defined queries (currently accomodating Postgres and MySQL). 
-Thus, the PowerBI needs to be only connected to a single CSV file.
+This script accomodates the querying of any number of SQL databases via a user-defined list.
+The script also dynamically handles varying SQL Database types (currently Postgres and MySQL) allowing the reporting tool to connect directly to a single data source.
 
-Secondarily, the script utilizes ThreadPoolExecutor to facilitate simultaneous SQL pulls from multiple sources, which is significantly superior to PowerBI parallel loading. 
+For optimization, the script utilizes ThreadPoolExecutor to facilitate simultaneous SQL pulls, which is significantly superior to PowerBI parallel loading. 
 This data flow is generally much more secure and handles potential latency or timeout issues much better. 
 Too many simultaneous quiries via PowerBI's internal ODBC's can easily crash or timeout, especially as the row count increases. 
 Connecting via Python reduces network handshakes that PowerBI may engage for query folding which can quickly add overhead.
@@ -39,8 +37,6 @@ I have tested my dashboard in 2 model flows.
   
 **This represents a 108-second (48%) reduction in cycle time.**
 
-Admittedly, direct internal refreshes in PowerBI are slightly more convenient for end users.
+Admittedly, direct internal refreshes in PowerBI are slightly more convenient for end users needeing the latest data.
 However, the data-staging significantly proves its merit by providing a much more stable and faster refresh cycle-times, avoiding crashes and timeouts.
-
-The benefits of this external data-staging is even more evident the report builder.
-This method allows them to optimize parallel data-loads, easily scale for additional SQL data sources, and quickly modify the modular queries and export components per their use case.
+The gaps between an integrated data pull can be minimized by running this script on certain time intervals.
