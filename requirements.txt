@@ -1,12 +1,5 @@
-# Standard Library
-import os
-import time
-import threading
-from threading import Lock
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-# Third-Party Libraries
-import pandas as pd
-from sqlalchemy import create_engine
-import psycopg2
-import mysql.connector
+pandas
+sqlalchemy
+psycopg2-binary
+mysql-connector-python
+python-dotenv
