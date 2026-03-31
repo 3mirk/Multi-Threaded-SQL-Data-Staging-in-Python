@@ -1,5 +1,4 @@
-# Multi-Threaded-SQL-Data-Staging in Python
-
+# Multi-Threaded SQL Data Staging in Python
 
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat&logo=postgresql&logoColor=white)
@@ -8,23 +7,24 @@
 ![Threading](https://img.shields.io/badge/Concurrency-ThreadPoolExecutor-success?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
 
-> A multi-threaded Python data-staging tool that replaces Power BI's native SQL connectors with concurrent database pulls. Reduces total dashboard refresh time by **48%** across 19 simultaneous database connections.
+> A multi-threaded Python data-staging tool that replaces Power BI's native SQL connectors with concurrent database pulls.
+> Reduces total dashboard refresh time by **48%** across 19 simultaneous database connections.
+
+---
 
 ## Background
 
-Power BI's built-in ODBC connectors handle multi-source refreshes sequentially and inefficiently, creating operational inefficiencies at scale.
+Power BI's built-in SQL connectors handle multi-source refreshes inefficiently, creating operational inefficiencies at scale.
 
-- **Unoptimized parallel loading:** PowerBI's refresh logic conducts query folding and schema-inference for each data source on every refresh.
-- **Crashes and timeouts:** Too many simultaneous ODBC connections overload network stack, especially as row counts grow.
-- **Configuration overhead:** Managing multiple data sources via Data Source Wizards or M-Code parameterization is error-prone and brittle
+- **Unoptimized parallel loading:** Power BI's refresh logic conducts query folding and schema inference for each data source on every refresh.
+- **Crashes and timeouts:** Too many simultaneous ODBC connections overload the network stack, especially as row counts grow.
+- **Configuration overhead:** Managing multiple data sources via Data Source Wizards or M-Code parameterization is error-prone and brittle.
 
 ---
 
 ## Architecture
 
-This script acts as a staging layer between your SQL databases and Power BI. 
-Instead of letting Power BI manage connections, Python handles all data extraction concurrently and writes a single clean CSV. 
-Power BI connects to one static file.
+This script acts as a staging layer between your SQL databases and Power BI. Instead of letting Power BI manage connections, Python handles all data extraction concurrently and writes a single clean CSV. Power BI connects to one static file.
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -49,7 +49,7 @@ Power BI connects to one static file.
                     │
                     ▼
            ┌─────────────────┐
-           │  Single CSV     │  ← PowerBI connects here
+           │  Single CSV     │  ← Power BI connects here
            └─────────────────┘
 ```
 
@@ -74,36 +74,38 @@ Tested across **19 databases** (3 MySQL, 16 PostgreSQL) with a **50,000 row limi
 ### Prerequisites
 
 ```bash
-pip install psycopg2-binary mysql-connector-python pandas
+pip install -r requirements.txt
 ```
 
 ### Configuration
 
-Edit the database list in the script (or a separate config file) to define your connections:
+Edit `sn_list` in `stage_data.py` to define your database connections. Each entry takes connection metadata only — no credentials:
 
 ```python
-DB_CONNECTIONS = [
-    {
-        "type": "postgres",
-        "host": "host1.example.com",
-        "port": 5432,
-        "database": "db_name",
-        "user": "user",
-        "password": "password",
-        "query": "SELECT * FROM your_table LIMIT 50000"
-    },
-    {
-        "type": "mysql",
-        "host": "host2.example.com",
-        "port": 3306,
-        "database": "db_name",
-        "user": "user",
-        "password": "password",
-        "query": "SELECT * FROM your_table LIMIT 50000"
-    },
-    # Add as many as needed...
+sn_list = [
+    {"Lab": "Lab_A", "IP": "192.168.x.x", "SN": "123", "Mapper": "v2", "SQL": "PostgreSQL"},
+    {"Lab": "Lab_B", "IP": "192.168.x.x", "SN": "134", "Mapper": "v3", "SQL": "MySQL"},
+    # Add additional connections here — comment out any row to skip on next run
 ]
 ```
+
+### Credential Management
+
+Credentials are never stored in the script. On first run, the script will prompt you for a username and password for each new connection, verify the credentials with a live test connection, and save them to a local `.env` file for all future runs.
+
+```
+── Verifying credentials ──────────────────────
+🔐 New connection: Lab_A - 123 (192.168.x.x, PostgreSQL)
+   No saved credentials found. Please enter credentials.
+   Username: your_username
+   Password: ********
+   Verifying connection... ✅ Success.
+   Credentials saved to .env.
+
+🔑 Lab_B - 134: Using saved credentials.
+```
+
+On all subsequent runs, saved credentials are loaded automatically and no prompt is shown.
 
 ### Run
 
@@ -111,7 +113,7 @@ DB_CONNECTIONS = [
 python stage_data.py
 ```
 
-Output: `staged_output.csv` >> Point your DataViz report to the this CSV.
+Output: `Kickouts_Staged.csv` — point your Power BI report to this file as its single data source.
 
 ---
 
@@ -129,4 +131,3 @@ The script is modular by design. Common modifications:
 ## License
 
 MIT
-
