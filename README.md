@@ -7,7 +7,7 @@
 ![Threading](https://img.shields.io/badge/Concurrency-ThreadPoolExecutor-success?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat)
 
-> A multi-threaded Python data-staging tool that replaces Power BI's native SQL connectors with concurrent database pulls.
+> A multi-threaded Python data-staging tool that replaces your data viz tools's native SQL connectors with concurrent database pulls.
 > Reduces total dashboard refresh time by **48%** across 19 simultaneous database connections.
 
 ---
